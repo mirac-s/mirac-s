@@ -2,4 +2,4 @@ DOWNLOAD:
 https://2011.filemail.com/api/file/get?filekey=dwZ9Wb76MjyRjTrM36ec9YkR1dGiOUdEsVU8uxEY-e9nd5leH6B58vQI43zop_XCqbE&pk_vid=40ab720d5049e977174716846211a860
 
 DOWNLOAD2:
-https://www.mediafire.com/file/61mndi3swnq460e/images+%2836%29.jpeg?dkey=8se7i9q4fyz&r=1175
+https://download1478.mediafire.com/niqn1garj7vgCle68-C8bWeKKYKndDyduRVOA2aQec8l4j4SPpatye1WxwBMEHmVr-pzEfrgqs4TA62Q_wq-PmtgsVCvMRCbY4U4FPmm42REtjIIo-SXRM5-WA9P0L6qP-Ab9PdPLcgUZj9xzqg_hqiP4qmj6TlohC6pIXli/61mndi3swnq460e/images+%2836%29.jpeg
