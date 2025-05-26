@@ -10,8 +10,9 @@ let spamClick = setInterval(() => {
     if (Date.now() >= endTime) clearInterval(spamClick);
 }, interval);
 
+-----
 Code Block:
-```let duration = 2000; // Süre (ms cinsinden) - 2000 = 2 saniye
+let duration = 2000; // Süre (ms cinsinden) - 2000 = 2 saniye
 let interval = 1; // Tıklama aralığı (1ms = çok hızlı)
 let endTime = Date.now() + duration;
 
@@ -21,10 +22,11 @@ let spamClick = setInterval(() => {
     let el = document.elementFromPoint(x, y);
     if (el) el.click();
     if (Date.now() >= endTime) clearInterval(spamClick);
-}, interval);```
+}, interval);
+
 
 V2:
-```setInterval(()=>document.querySelector('button').click(),1);```
+`setInterval(()=>document.querySelector('button').click(),1);`
 
 Chrome Dino:
 ```(() => {
