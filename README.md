@@ -1,3 +1,6 @@
+**TARAYICI İNDİR:
+https://gitlab.com/api/v4/projects/12829184/packages/generic/librewolf/111.0-3/LibreWolf-111.0-3.x86_64.tar.bz2**
+
 V1:
 ```
 (function stableDinoBotV1() {
