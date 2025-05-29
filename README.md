@@ -187,3 +187,100 @@ V3:
 
 })();
 ```
+
+-
+
+V4:
+```
+<script>
+  (function() {
+    let botInterval;
+    const JUMP_THRESHOLD = 200;
+    const CHECK_INTERVAL = 10;
+
+    function startBot() {
+      if (typeof Runner === 'undefined' || !Runner.instance_) {
+        console.error('%c[Dino Bot] %cChrome Dino oyunu bulunamadı. Lütfen oyunu başlatın.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+        return;
+      }
+      if (botInterval) {
+        console.warn('%c[Dino Bot] %cBot zaten çalışıyor.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+        return;
+      }
+      console.log('%c[Dino Bot] %cBot başlatılıyor...', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+
+      botInterval = setInterval(() => {
+        try {
+          const tRex = Runner.instance_.tRex;
+          const horizon = Runner.instance_.horizon;
+
+          if (!tRex || !horizon) {
+            console.warn('%c[Dino Bot] %cOyun nesneleri bulunamadı, bot duraklatıldı.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+            stopBot();
+            return;
+          }
+
+          if (Runner.instance_.playing) {
+            const obstacles = horizon.obstacles;
+            if (obstacles.length > 0) {
+              const firstObstacle = obstacles[0];
+              const obstacleX = firstObstacle.xPos;
+              const tRexX = tRex.xPos;
+
+              if (obstacleX - tRexX < JUMP_THRESHOLD + firstObstacle.width && obstacleX > 0) {
+                if (!tRex.jumping && !tRex.ducking) {
+                  tRex.jump();
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error(`%c[Dino Bot] %cBir hata oluştu: ${e.message}. Bot durduruluyor.`, 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+          stopBot();
+        }
+      }, CHECK_INTERVAL);
+
+      console.log('%c[Dino Bot] %cBot başarıyla başlatıldı! İyi eğlenceler.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+      console.log('%c[Dino Bot] %cDurdurmak için `stopDinoBot()` yazın.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+    }
+
+    function stopBot() {
+      if (botInterval) {
+        clearInterval(botInterval);
+        botInterval = null;
+        console.log('%c[Dino Bot] %cBot durduruldu.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+      } else {
+        console.warn('%c[Dino Bot] %cBot zaten çalışmıyor.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+      }
+    }
+
+    window.startDinoBot = startBot;
+    window.stopDinoBot = stopBot;
+
+    console.log('%c[Dino Bot] %cDino Bot yüklendi. Başlatmak için `startDinoBot()` yazın.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+    console.log('%c[Dino Bot] %cDurdurmak için `stopDinoBot()` yazın.', 'color: #4CAF50; font-weight: bold;', 'color: #333;');
+  })();
+</script>
+```
+
+-
+
+Uçuş Modu:
+```
+Runner.instance_.tRex.groundYPos = 0;
+```
+
+-
+
+Skor Hack:
+```
+Runner.instance_.distanceMeter.maxScore = 999999999;
+Runner.instance_.highestScore = 0;
+var distanceMeter = Runner.instance_.distanceMeter;
+var originalUpdate = distanceMeter.update;
+distanceMeter.update = function(deltaTime) {
+    originalUpdate.apply(this, arguments);
+    if (this.digits[0] >= 9 && this.digits[1] >= 9 && this.digits[2] >= 9 &&
+        this.digits[3] >= 9 && this.digits[4] >= 9) {}
+};
+```
