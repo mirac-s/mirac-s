@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Tıklama Oyunu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f0f0;
+      padding: 50px;
+    }
+    h1 {
+      font-size: 36px;
+      color: #333;
+    }
+    #score {
+      font-size: 60px;
+      margin: 20px;
+      color: green;
+      font-weight: bold;
+    }
+    #timer {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    #clickBtn {
+      padding: 30px 80px;
+      font-size: 32px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    #clickBtn:active {
+      transform: scale(0.98);
+    }
+    #clickBtn:disabled {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+    #record {
+      font-size: 24px;
+      color: red;
+      margin: 10px;
+      font-weight: bold;
+    }
+    #result {
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      padding: 10px;
+      font-size: 16px;
+      width: 200px;
+    }
+    .action-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin: 10px;
+      cursor: pointer;
+    }
+    table {
+      margin: 30px auto;
+      border-collapse: collapse;
+      width: 60%;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 10px;
+      font-size: 18px;
+    }
+    th {
+      background-color: #ddd;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tıklama Oyunu</h1>
+  <div id="timer">Kalan Süre: 10</div>
+  <div id="score">0</div>
+  <button id="clickBtn">TIKLA!</button>
+  <div id="record"></div>
+
+  <div id="result" style="display:none;">
+    <input type="text" id="nameInput" placeholder="İsminizi yazın">
+    <div>
+      <button class="action-btn" onclick="saveScore()">💾 Kayıt Et</button>
+      <button class="action-btn" onclick="resetGame()">🔁 Tekrar Dene</button>
+    </div>
+  </div>
+
+  <h2>Skor Tablosu</h2>
+  <table>
+    <thead>
+      <tr><th>İsim</th><th>Skor</th></tr>
+    </thead>
+    <tbody id="scoreBody"></tbody>
+  </table>
+
+  <script>
+    let score = 0;
+    let timeLeft = 10;
+    let interval;
+    let started = false;
+    let maxLegitScore = 0;
+
+    const scoreElement = document.getElementById('score');
+    const timerElement = document.getElementById('timer');
+    const recordElement = document.getElementById('record');
+    const resultDiv = document.getElementById('result');
+    const scoreBody = document.getElementById('scoreBody');
+
+    // Sayfa yüklenince kayıtlı skorları getir
+    let scoreData = JSON.parse(localStorage.getItem("scoreTable")) || [];
+    renderTable();
+
+    document.getElementById('clickBtn').addEventListener('click', () => {
+      if (!started) startGame();
+      score++;
+      scoreElement.textContent = score;
+    });
+
+    function startGame() {
+      started = true;
+      interval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = `Kalan Süre: ${timeLeft}`;
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function endGame() {
+      document.getElementById('clickBtn').disabled = true;
+      resultDiv.style.display = 'block';
+
+      // DOM hilesi kontrolü
+      const displayedScore = parseInt(scoreElement.textContent);
+      if (displayedScore !== score) {
+        score = displayedScore;
+      }
+
+      if (score > maxLegitScore) {
+        recordElement.textContent = "🎉 Yeni Rekor!";
+        maxLegitScore = score;
+      } else {
+        recordElement.textContent = "";
+      }
+    }
+
+    function saveScore() {
+      const name = document.getElementById('nameInput').value.trim() || "İsimsiz";
+      scoreData.push({ name, score });
+      scoreData.sort((a, b) => b.score - a.score);
+      localStorage.setItem("scoreTable", JSON.stringify(scoreData));
+      renderTable();
+      resetGame();
+    }
+
+    function renderTable() {
+      scoreBody.innerHTML = "";
+      scoreData.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${entry.name}</td><td>${entry.score}</td>`;
+        scoreBody.appendChild(row);
+      });
+    }
+
+    function resetGame() {
+      score = 0;
+      timeLeft = 10;
+      started = false;
+      scoreElement.textContent = "0";
+      timerElement.textContent = "Kalan Süre: 10";
+      document.getElementById('clickBtn').disabled = false;
+      recordElement.textContent = "";
+      resultDiv.style.display = 'none';
+      document.getElementById('nameInput').value = "";
+    }
+
+    // Hile kapıları
+    window.cheat = {
+      setScore: val => score = parseInt(val),
+      getScore: () => score,
+      setDOMScore: val => scoreElement.textContent = val,
+    };
+    console.log("🧪 Hile API aktif: cheat.setScore(999), cheat.setDOMScore(1000)");
+  </script>
+</body>
+</html>
