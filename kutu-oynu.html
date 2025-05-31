@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta 
+    name="viewport" 
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  >
+  <title>Kutular Oyunu</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background-color: #111;
+      touch-action: none;
+    }
+
+    #scoreboard {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 10px 16px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-family: sans-serif;
+      font-size: 18px;
+      border-radius: 8px;
+      z-index: 10;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div id="scoreboard">Skor: 0</div>
+  <canvas id="game"></canvas>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const scoreboard = document.getElementById("scoreboard");
+
+    let score = 0;
+    const HITBOX_PADDING = 30;
+    const BOX_SIZE = 40;
+    let boxes = [];
+
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function rand(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    class Box {
+      constructor(x, y, size) {
+        this.size = size;
+        this.x = x - size / 2;
+        this.y = y - size / 2;
+        const speed = rand(100, 300) / 60;
+        const angle = rand(0, 2 * Math.PI);
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.color = `hsl(${rand(0, 360)}, 80%, 60%)`;
+      }
+
+      update(delta) {
+        this.x += this.vx * delta;
+        this.y += this.vy * delta;
+
+        if (this.x < 0 || this.x + this.size > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y + this.size > canvas.height) this.vy *= -1;
+
+        this.x = Math.max(0, Math.min(canvas.width - this.size, this.x));
+        this.y = Math.max(0, Math.min(canvas.height - this.size, this.y));
+      }
+
+      draw(ctx) {
+        ctx.save();
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 12;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+        ctx.restore();
+      }
+
+      contains(px, py) {
+        return (
+          px >= this.x - HITBOX_PADDING &&
+          px <= this.x + this.size + HITBOX_PADDING &&
+          py >= this.y - HITBOX_PADDING &&
+          py <= this.y + this.size + HITBOX_PADDING
+        );
+      }
+    }
+
+    function spawnBoxes(count) {
+      for (let i = 0; i < count; i++) {
+        const x = rand(BOX_SIZE, canvas.width - BOX_SIZE);
+        const y = rand(BOX_SIZE, canvas.height - BOX_SIZE);
+        boxes.push(new Box(x, y, BOX_SIZE));
+      }
+    }
+
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const mx = e.clientX - rect.left;
+      const my = e.clientY - rect.top;
+
+      for (let i = 0; i < boxes.length; i++) {
+        if (boxes[i].contains(mx, my)) {
+          const totalBefore = boxes.length;
+          boxes.splice(i, 1); // tıklanan kutuyu sil
+          const newCount = Math.max(2, totalBefore * 2);
+          spawnBoxes(newCount);
+          score++;
+          scoreboard.textContent = `Skor: ${score}`;
+          break;
+        }
+      }
+    });
+
+    // Başlangıçta 1 kutu
+    spawnBoxes(1);
+
+    // Oyun döngüsü
+    let lastTime = 0;
+    function gameLoop(time) {
+      const delta = (time - lastTime) / (1000 / 60);
+      lastTime = time;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const box of boxes) {
+        box.update(delta);
+        box.draw(ctx);
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
