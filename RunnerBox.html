@@ -1,0 +1,85 @@
+<!DOCTYPE html><html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>RunnerBox</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html, body{width:100%;height:100%;overflow:hidden;font-family:'Segoe UI',sans-serif;background:#1e3c72;}
+  #container{position:relative;width:100%;height:100%;display:flex;justify-content:center;align-items:center;}
+  canvas{width:100%;height:100%;display:block;}
+  #menu, #gameUI, #gameOver{position:absolute;left:50%;transform:translateX(-50%);text-align:center;z-index:10;}
+  #menu{top:40%;color:#fff;}
+  #menu h1{font-size:2.5rem;margin-bottom:1rem;text-shadow:0 0 10px rgba(0,0,0,0.5);}
+  #menu button{padding:1rem 2rem;font-size:1.2rem;border:none;border-radius:8px;background:#0d6efd;color:#fff;cursor:pointer;}
+  #gameUI{top:1rem;left:1rem;transform:none;background:rgba(255,255,255,0.8);padding:0.5rem 1rem;border-radius:8px;font-size:1rem;color:#222;display:none;}
+  #gameOver{bottom:20%;color:#ff4c4c;font-size:2rem;font-weight:bold;text-shadow:0 0 10px #f00;display:none;}
+  #gameOver button{margin-top:1rem;padding:0.8rem 1.5rem;font-size:1rem;border:none;border-radius:6px;background:#0d6efd;color:#fff;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="container">
+  <canvas id="gameCanvas"></canvas>
+  <div id="menu">
+    <h1>RunnerBox</h1>
+    <button id="startBtn">Oyna</button>
+  </div>
+  <div id="gameUI">
+    Skor: <span id="score">0</span> &nbsp; Coin: <span id="coins">0</span>
+  </div>
+  <div id="gameOver">
+    YENİLDİN EZİK!<br>
+    <button id="retryBtn">Yeniden Oyna</button>
+  </div>
+</div>
+<script>
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const startBtn = document.getElementById('startBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const menu = document.getElementById('menu');
+  const gameUI = document.getElementById('gameUI');
+  const gameOver = document.getElementById('gameOver');
+  const scoreSpan = document.getElementById('score');
+  const coinsSpan = document.getElementById('coins');
+  let playerColor = '#333', gravity=1, isGrounded=true, groundY;
+  let player, obstacles, coinsArr, frame, score, coins, speed, running, anim;
+  function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    groundY = canvas.height - (canvas.height*0.1);
+  }
+  window.addEventListener('resize',resize);
+  resize();
+  function resetGame(){
+    player={x:canvas.width*0.1,y:groundY-50,w:50,h:50,vy:0};
+    obstacles=[];coinsArr=[];frame=0;score=0;coins=0;speed=7;isGrounded=true;
+    scoreSpan.textContent=0;coinsSpan.textContent=0;
+  }
+  function spawnObstacle(){
+    const size=30+Math.random()*40;
+    obstacles.push({x:canvas.width,y:groundY-size,w:30+Math.random()*30,h:size,color:['#8e44ad','#e67e22','#2980b9'][Math.floor(Math.random()*3)]});
+  }
+  function spawnCoin(){
+  coinsArr.push({x: canvas.width, y: groundY - 30, r: 10});
+}
+  function drawBG(){
+    const g=ctx.createLinearGradient(0,0,0,canvas.height);
+    g.addColorStop(0,'#87cefa');g.addColorStop(1,'#d0f0ff');
+    ctx.fillStyle=g;ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#34495e';ctx.fillRect(0,groundY,canvas.width,canvas.height-groundY);
+  }
+  function drawPlayer(){ctx.fillStyle=playerColor;ctx.fillRect(player.x,player.y,player.w,player.h);}
+  function drawObs(){obstacles.forEach(ob=>{ctx.fillStyle=ob.color;ctx.fillRect(ob.x,ob.y,ob.w,ob.h);});}
+  function drawCoins(){coinsArr.forEach(c=>{ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,2*Math.PI);ctx.fillStyle='#f1c40f';ctx.fill();});}
+  function hit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+  function loop(){if(!running)return;frame++;drawBG();player.vy+=gravity;player.y+=player.vy; if(player.y+player.h>groundY){player.y=groundY-player.h;player.vy=0;isGrounded=true;}drawPlayer();if(frame%90===0)spawnObstacle();if(frame%150===0)spawnCoin();obstacles.forEach((o,i)=>{o.x-=speed; if(hit(player,o)){end();}if(o.x+o.w<0)obstacles.splice(i,1);} );drawObs();coinsArr.forEach((c,i)=>{c.x-=speed; if(hit(player,{x:c.x-c.r,y:c.y-c.r,w:2*c.r,h:2*c.r})){coins++;coinsSpan.textContent=coins;coinsArr.splice(i,1);} if(c.x+c.r<0)coinsArr.splice(i,1);} );drawCoins();score++;scoreSpan.textContent=score;anim=requestAnimationFrame(loop);}
+  function end(){running=false;cancelAnimationFrame(anim);gameOver.style.display='block';}
+  canvas.addEventListener('click',()=>{if(running&&isGrounded){player.vy=-20;isGrounded=false;}});
+  startBtn.onclick=()=>{resetGame();running=true;menu.style.display='none';gameUI.style.display='block';gameOver.style.display='none';loop();};
+  retryBtn.onclick=()=>{running=false;menu.style.display='block';gameUI.style.display='none';gameOver.style.display='none';};
+})();
+</script>
+</body>
+</html>
